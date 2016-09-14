@@ -35,6 +35,7 @@
 // rules apply as detailed at the top of minidump_writer.h: no libc calls and
 // use the alternative allocator.
 
+#include <stdint.h>
 #include "client/linux/minidump_writer/linux_dumper.h"
 
 #include <assert.h>
@@ -43,6 +44,8 @@
 #include <limits.h>
 #include <stddef.h>
 #include <string.h>
+#include <cstdint>
+
 
 #include "client/linux/minidump_writer/line_reader.h"
 #include "common/linux/elfutils.h"
@@ -590,6 +593,16 @@ bool LinuxDumper::GetLoadedElfHeader(uintptr_t start_addr, ElfW(Ehdr)* ehdr) {
   return my_memcmp(&ehdr->e_ident, ELFMAG, SELFMAG) == 0;
 }
 
+// stdint.h is included but it doesn't work, but I am not fixing that
+// obscure bug ...
+#if defined(__LP64__)
+#define UINTPTR_MAX    UINT64_MAX
+#else
+#define UINT32_MAX       (4294967295U)
+#define UINTPTR_MAX    UINT32_MAX
+#endif
+
+
 void LinuxDumper::ParseLoadedElfProgramHeaders(ElfW(Ehdr)* ehdr,
                                                uintptr_t start_addr,
                                                uintptr_t* min_vaddr_ptr,
@@ -597,7 +610,8 @@ void LinuxDumper::ParseLoadedElfProgramHeaders(ElfW(Ehdr)* ehdr,
                                                size_t* dyn_count_ptr) {
   uintptr_t phdr_addr = start_addr + ehdr->e_phoff;
 
-  const uintptr_t max_addr = UINTPTR_MAX;
+  //
+  const uintptr_t max_addr =  UINTPTR_MAX;
   uintptr_t min_vaddr = max_addr;
   uintptr_t dyn_vaddr = 0;
   size_t dyn_count = 0;
