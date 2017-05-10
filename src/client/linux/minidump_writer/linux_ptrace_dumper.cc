@@ -54,6 +54,11 @@
 #include <cpuid.h>
 #endif
 
+#ifndef PTRACE_GETREGS
+#define PTRACE_GETREGS 12
+#define PTRACE_GETFPREGS 14
+#endif
+
 #include "client/linux/minidump_writer/directory_reader.h"
 #include "client/linux/minidump_writer/line_reader.h"
 #include "common/linux/linux_libc_support.h"
